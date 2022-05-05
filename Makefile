@@ -1,7 +1,7 @@
-CC=g++ --std=c++11
+CC=g++ --std=c++17
 
 run:
-	$(CC) src/outline.cpp 
+	$(CC) src/main.cpp -o snake
 
 # This wont work on windows
 clean:
