@@ -7,7 +7,7 @@ int key_press() {
         system("stty raw");
         c = getchar(); 
         system("stty cooked");
-        system("clear");
+        //system("clear");
         return c;
         // // terminate when "." is pressed
         // system("stty cooked");
