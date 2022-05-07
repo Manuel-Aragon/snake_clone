@@ -1,11 +1,9 @@
 # Clone of Snake Game using C++
-# by Manuel Aragon
+## by Manuel Aragon
 
-# To compile
-run the command "make"
-run the command "./snake"
+### To compile
+-run the command "make"<br>
+-run the command "./snake"
 
-This program was tested on MacOS
-and Linux.
-There is no garuntee that it will
-work on windows.
+This program was tested on MacOS and Linux. <br>
+It may or may not work on Windows.

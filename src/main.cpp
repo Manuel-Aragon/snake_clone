@@ -6,7 +6,6 @@
 #include <string>
 #include <future>
 
-
 #include "input.h"
 #include "tools.h"
 struct Coordinate{
