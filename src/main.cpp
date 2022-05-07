@@ -21,6 +21,10 @@ class Game{
 	struct Fruit{
 		int x;
 		int y;
+		void spawn(int width, int height){
+			x = rand() % width;
+			y = rand() % height;
+		};
 	};
 	Fruit fruit;
 	int x, y, score, high_score;
@@ -37,9 +41,7 @@ void Setup()
 	dir = STOP;
 	x = width / 2;
 	y = height / 2;
-	
-	fruit.x = rand() % width;
-	fruit.y = rand() % height;
+	fruit.spawn(width, height);
 	score = 0;
 	int length = 1;
 	tailX = {-1};
