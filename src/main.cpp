@@ -9,25 +9,30 @@
 
 #include "input.h"
 #include "tools.h"
-
+struct Coordinate{
+    int x = -1;
+    int y = -1;
+};
+struct Fruit{
+	int x;
+	int y;
+	void spawn(int width, int height){
+		x = rand() % width;
+		y = rand() % height;
+	};
+};
 
 using namespace std;
 class Game{
 	public:
+
 	const double SPEED = 10;
 	bool gameOver;
 	const int width = 20;
 	const int height = 20;
-	struct Fruit{
-		int x;
-		int y;
-		void spawn(int width, int height){
-			x = rand() % width;
-			y = rand() % height;
-		};
-	};
 	Fruit fruit;
 	int x, y, score, high_score;
+	vector<Coordinate> tail;
 	vector<int> tailX;    
 	vector<int> tailY;
 	int length;
@@ -44,6 +49,7 @@ void Setup()
 	fruit.spawn(width, height);
 	score = 0;
 	int length = 1;
+	tail = {{-1, -1}};
 	tailX = {-1};
 	tailY = {-1};
 }
@@ -92,7 +98,8 @@ void Draw()
 				bool print = false;
 				for (int k = 0; k < length; k++)
 				{
-					if (tailX[k] == j && tailY[k] == i)
+					if (tail[k].x == j && tail[k].y == i)
+					//if (tailX[k] == j && tailY[k] == i)
 					{
 						cout << "o";
 						print = true;
@@ -121,17 +128,23 @@ void Logic()
 	if (length >= 1){
 
 		//
-		int prevX = tailX[0];
-		int prevY = tailY[0];
+		int prevX = tail[0].x;
+		int prevY = tail[0].y;
+		// int prevX = tailX[0];
+		// int prevY = tailY[0];
 		int prev2X, prev2Y;
-		tailX[0] = x;
-		tailY[0] = y;
+		tail[0] = {x, y};
+		// tailX[0] = x;
+		// tailY[0] = y;
 		for (int i = 1; i < length; i++)
 		{
-			prev2X = tailX[i];
-			prev2Y = tailY[i];
-			tailX[i] = prevX;
-			tailY[i] = prevY;
+			prev2X = tail[i].x;
+			prev2Y = tail[i].y;
+			// prev2X = tailX[i];
+			// prev2Y = tailY[i];
+			tail[i] = {prevX, prevY};
+			// tailX[i] = prevX;
+			// tailY[i] = prevY;
 			prevX = prev2X;
 			prevY = prev2Y;
 		}
@@ -160,8 +173,9 @@ void Logic()
 	if (y >= height) y = 0; else if (y < 0) y = height - 1;
 
     for (int i = 0; i < length; i++){
-		if (tailX[i] == x && tailY[i] == y)
+		if (tail[i].x == x && tail[i].y == y)
 			gameOver = true;
+		//if (tailX[i] == x && tailY[i] == y)
 	}
 
 
@@ -174,10 +188,9 @@ void Logic()
 		fruit.x = rand() % width;
 		fruit.y = rand() % height;
 		length++;
-		debug(length);
-		tailX.push_back(x);
-		debug(tailX.back());
-		tailY.push_back(y);
+		tail.push_back({x, y});
+		// tailX.push_back(x);
+		// tailY.push_back(y);
 	}
 }
 bool endGame(){
