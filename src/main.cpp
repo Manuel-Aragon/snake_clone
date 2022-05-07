@@ -26,15 +26,13 @@ using namespace std;
 class Game{
 	public:
 
-	const double SPEED = 10;
+	double SPEED = 9.5;
 	bool gameOver;
 	const int width = 20;
 	const int height = 20;
 	Fruit fruit;
 	int x, y, score, high_score;
 	vector<Coordinate> tail;
-	vector<int> tailX;    
-	vector<int> tailY;
 	int length;
 	enum eDirecton { STOP = 0, LEFT, RIGHT, UP, DOWN};
 	eDirecton dir;
@@ -50,8 +48,6 @@ void Setup()
 	score = 0;
 	int length = 1;
 	tail = {{-1, -1}};
-	tailX = {-1};
-	tailY = {-1};
 }
 void Parse(char key)
 {
@@ -90,17 +86,13 @@ void Draw()
 			if (j == 0)
 				cout << "#";
 			if (i == y && j == x)
-				cout << "O";
+				cout << 'O';
 			else if (i == fruit.y && j == fruit.x)
-				cout << "F";
-			else
-			{
+				cout << 'a';
+			else{
 				bool print = false;
-				for (int k = 0; k < length; k++)
-				{
-					if (tail[k].x == j && tail[k].y == i)
-					//if (tailX[k] == j && tailY[k] == i)
-					{
+				for (int k = 0; k < length; k++){
+					if (tail[k].x == j && tail[k].y == i){
 						cout << "o";
 						print = true;
 					}
@@ -130,21 +122,14 @@ void Logic()
 		//
 		int prevX = tail[0].x;
 		int prevY = tail[0].y;
-		// int prevX = tailX[0];
-		// int prevY = tailY[0];
 		int prev2X, prev2Y;
 		tail[0] = {x, y};
-		// tailX[0] = x;
-		// tailY[0] = y;
+
 		for (int i = 1; i < length; i++)
 		{
 			prev2X = tail[i].x;
 			prev2Y = tail[i].y;
-			// prev2X = tailX[i];
-			// prev2Y = tailY[i];
 			tail[i] = {prevX, prevY};
-			// tailX[i] = prevX;
-			// tailY[i] = prevY;
 			prevX = prev2X;
 			prevY = prev2Y;
 		}
@@ -168,29 +153,28 @@ void Logic()
 		break;
 	}
 
-	//rollover
+	//rollover snake to otherside of the screen
 	if (x >= width) x = 0; else if (x < 0) x = width - 1;
 	if (y >= height) y = 0; else if (y < 0) y = height - 1;
 
+	// if snake collides with itself, GAMEOVER
     for (int i = 0; i < length; i++){
 		if (tail[i].x == x && tail[i].y == y)
 			gameOver = true;
-		//if (tailX[i] == x && tailY[i] == y)
 	}
 
-
-	if (x == fruit.x && y == fruit.y)
-	{
+	//snake gets fruit
+	if (x == fruit.x && y == fruit.y){
 		score += 10;
 		if (score > high_score){
 			high_score = score;
 		}
 		fruit.x = rand() % width;
 		fruit.y = rand() % height;
-		length++;
+		if (length < 10){
+			length++;
+		}
 		tail.push_back({x, y});
-		// tailX.push_back(x);
-		// tailY.push_back(y);
 	}
 }
 bool endGame(){
@@ -217,10 +201,7 @@ void run(){
 	{
 		const int ms = 1/ SPEED * 1000000;	//micro
 		std::chrono::microseconds span(ms);
-		//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now() + span;
-		//std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
 		int key = Input();
-
 		Parse(key);
 		Logic();
 		std::this_thread::sleep_for (span);
