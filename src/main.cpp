@@ -22,7 +22,8 @@ class Game{
 		int x;
 		int y;
 	};
-	int x, y, fruitX, fruitY, score, high_score;
+	Fruit fruit;
+	int x, y, score, high_score;
 	vector<int> tailX;    
 	vector<int> tailY;
 	int length;
@@ -36,8 +37,9 @@ void Setup()
 	dir = STOP;
 	x = width / 2;
 	y = height / 2;
-	fruitX = rand() % width;
-	fruitY = rand() % height;
+	
+	fruit.x = rand() % width;
+	fruit.y = rand() % height;
 	score = 0;
 	int length = 1;
 	tailX = {-1};
@@ -81,7 +83,7 @@ void Draw()
 				cout << "#";
 			if (i == y && j == x)
 				cout << "O";
-			else if (i == fruitY && j == fruitX)
+			else if (i == fruit.y && j == fruit.x)
 				cout << "F";
 			else
 			{
@@ -161,14 +163,14 @@ void Logic()
 	}
 
 
-	if (x == fruitX && y == fruitY)
+	if (x == fruit.x && y == fruit.y)
 	{
 		score += 10;
 		if (score > high_score){
 			high_score = score;
 		}
-		fruitX = rand() % width;
-		fruitY = rand() % height;
+		fruit.x = rand() % width;
+		fruit.y = rand() % height;
 		length++;
 		debug(length);
 		tailX.push_back(x);
