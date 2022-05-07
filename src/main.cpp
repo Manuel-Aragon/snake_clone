@@ -3,216 +3,180 @@
 #include <chrono>
 #include <thread>
 #include <stdio.h>
-#include <cstdlib>
 #include <string>
+#include <future>
+
 
 #include "input.h"
 #include "tools.h"
+
+
 using namespace std;
-
-enum direction{
-    north,
-    south,
-    west,
-    east
-};
-
-struct Coordinate{
-    int x = -1;
-    int y = -1;
-};
-
-class Snake{
-    //length of snake
-    int length;
-    //variable to hold current direction
-    direction facing;
-    //variable that holds current body position on board
-    vector<vector<int>> body;
-    //moves snake based on the direction the snake is facing 
-    public:
-    bool move();
-    //changes direction of snake
-    bool change(direction new_facing){
-        facing = new_facing;
-        return true;
-    }
-    //increases the length of the snake
-    bool increase();
-    /*returns true if the snake collided with itself
-    or the border*/
-    bool collided();
-    bool addToBoard(vector<vector<char>> &board){
-        for (auto i: body){
-            board[i[0]][i[1]] = 's'; 
-        }
-        return true;
-    }
-    Snake(vector<vector<char>> &board){
-        length = 1;
-        facing = north;
-        body.push_back(vector<int>{5,5});
-        addToBoard(board);
-    }
-};
-
-class Fruit{
-    Coordinate position;
-    public:
-    //default constructors
-    
-    /*spawns the fruit and adds it to the board
-    returns Coordinate holding location on board*/
-    Coordinate spawn(vector<vector<char>> &board){
-        bool board_collision = true;
-        bool snake_collision = true;
-        debug("before loop");
-        //TODO: CHECK IF INFINITE LOOP
-        while(board_collision || snake_collision){
-            debug("before cond");
-            position.x = rand() % 10;    //10 = board width
-            position.y = rand() % 10;    //10 = board height
-            //check if spawn location is valid
-            board_collision = (board[position.x][position.y] == '#');
-            snake_collision = (board[position.x][position.y] == 's');
-        }
-        debug(to_string(position.x));
-        debug(to_string(position.y));
-        debug(board[position.x][position.y]);
-        board[position.x][position.y] = 'a';    //add to board
-        debug(board[position.x][position.y]);
-        return position;
-    }
-};
-
-
 class Game{
-    private:
-    //holds x and y values of map
-    vector<vector<char>> board
-    {
-        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#'}
-    };
-
-    vector<char> game_over_text{'#', 
-    'G','A','M','E','O','V','E','R','#'};
-    vector<char> game_over_score{'#', 
-    'S','C','O','R','E',':','0','0','#'};
-
-    int score = 0;
-    int high_score = 0;
-    bool end_game = false;
+	public:
+	const double SPEED = 10;
+	bool gameOver;
+	const int width = 20;
+	const int height = 20;
+	struct Fruit{
+		int x;
+		int y;
+	};
+	int x, y, fruitX, fruitY, score;
+	int tailX[100], tailY[100];
+	int nTail;
+	enum eDirecton { STOP = 0, LEFT, RIGHT, UP, DOWN};
+	eDirecton dir;
 
 
-    public:
-    //increases score by 1
-    void increaseScore(){
+void Setup()
+{
+	gameOver = false;
+	dir = STOP;
+	x = width / 2;
+	y = height / 2;
+	fruitX = rand() % width;
+	fruitY = rand() % height;
+	score = 0;
+}
+void Parse(char key)
+{
+        switch (key)
+        {
+        case 'a':
+            dir = LEFT;
+            break;
+        case 'd':
+            dir = RIGHT;
+            break;
+        case 'w':
+            dir = UP;
+            break;
+        case 's':
+            dir = DOWN;
+            break;
+        case 'x':
+            gameOver = true;
+            break;
+        }
+}
+void Draw()
+{
+	system("clear");
+	for (int i = 0; i < width+2; i++)
+		cout << "#";
+	cout << endl;
 
-    }
-    //changes high score
-    void newHighScore(int new_score){
-        high_score = new_score;
-    }
-
-    void input(Snake s){
-        switch (key_press())
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
 		{
-		case 'w':
-			s.change(north);
-			break;
-		case 'a':
-			s.change(west);
-			break;
-		case 's':
-			s.change(south);
-			break;
-		case 'd':
-			s.change(east);
-			break;
-		case 'x':
-			end_game = true;
-			break;
+			if (j == 0)
+				cout << "#";
+			if (i == y && j == x)
+				cout << "O";
+			else if (i == fruitY && j == fruitX)
+				cout << "F";
+			else
+			{
+				bool print = false;
+				for (int k = 0; k < nTail; k++)
+				{
+					if (tailX[k] == j && tailY[k] == i)
+					{
+						cout << "o";
+						print = true;
+					}
+				}
+				if (!print)
+					cout << " ";
+			}
+				
+
+			if (j == width - 1)
+				cout << "#";
 		}
-    }
-    /*starts the game.
-    Loops and continuously updates the display while
-    waiting for user input. 
-    */
-    void run(){
-        //debug("start of run");
-        reset();
-        debug("after reset");
-        Snake player(board);
-        Fruit apple;
-        apple.spawn(board);
-        std::this_thread::sleep_for(std::chrono::seconds(10));
-        display();
+		cout << endl;
+	}
 
-        debug("after spawn");
-        while(!end_game){
-            display();
-            input(player);
-            std::this_thread::sleep_for(std::chrono::milliseconds(2));
-        }
-        endGame();
-        cout << "exited game\n";
-    }
-    //resets initial values of game
-    void reset(){
-        //reset board
-        board ={
-        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#'}
-    };
+	for (int i = 0; i < width+2; i++)
+		cout << "#";
+	cout << endl;
+	cout << "Score:" << score << endl;
+}
 
-    }
-    /*displays current value to screen,
-    called 60 times a second
-    */
-    void display(){
-        system("clear");
-        cout << "Score:" << score << '\n';
-        //display board
-        for (int i =0; i < board.size();i++){
-            for(int k=0; k < board[i].size(); k++){
-                cout << board[i][k] << " ";
-            }
-            cout << '\n';
-        }
-    }
-    /*will call the snakes collided function
-    and if the result is true call the endGame
-    function.*/
-    void checkCollision(){
-    }
-    //ends game and updates high score 
-    void endGame(){
-        //add end game screen
-        board[5]= game_over_text;
-        board[6] = game_over_score;
-        display();
-    }
+
+void Logic()
+{
+	int prevX = tailX[0];
+	int prevY = tailY[0];
+	int prev2X, prev2Y;
+	tailX[0] = x;
+	tailY[0] = y;
+	for (int i = 1; i < nTail; i++)
+	{
+		prev2X = tailX[i];
+		prev2Y = tailY[i];
+		tailX[i] = prevX;
+		tailY[i] = prevY;
+		prevX = prev2X;
+		prevY = prev2Y;
+	}
+	switch (dir)
+	{
+	case LEFT:
+		x--;
+		break;
+	case RIGHT:
+		x++;
+		break;
+	case UP:
+		y--;
+		break;
+	case DOWN:
+		y++;
+		break;
+	default:
+		break;
+	}
+	//if (x > width || x < 0 || y > height || y < 0)
+	//	gameOver = true;
+	if (x >= width) x = 0; else if (x < 0) x = width - 1;
+	if (y >= height) y = 0; else if (y < 0) y = height - 1;
+
+	for (int i = 0; i < nTail; i++)
+		if (tailX[i] == x && tailY[i] == y)
+			gameOver = true;
+
+	if (x == fruitX && y == fruitY)
+	{
+		score += 10;
+		fruitX = rand() % width;
+		fruitY = rand() % height;
+		nTail++;
+	}
+}
+void run(){
+	Setup();
+	Draw();
+	while (!gameOver)
+	{
+		const int ms = 1/ SPEED * 1000000;	//micro
+		std::chrono::microseconds span(ms);
+		//std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now() + span;
+		//std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+		int key = Input();
+
+		Parse(key);
+		Logic();
+		std::this_thread::sleep_for (span);
+		Draw();
+	}
+	std::cout << "GAME OVER" << '\n';
+}
 };
-
 
 
 int main(){
-    Game().run();   //starts game
+	Game().run();
 }
